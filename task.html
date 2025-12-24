@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KidWallet - Add Friend</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Exo+2:wght@300;400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/styles.css">
+    <style>
+        .friends-list {
+            display: grid;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        
+        .friend-item {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 10px;
+            padding: 15px;
+            border-left: 4px solid;
+        }
+        
+        .friend-pending {
+            border-left-color: var(--warning);
+        }
+        
+        .friend-verified {
+            border-left-color: var(--success);
+        }
+        
+        .friend-declined {
+            border-left-color: var(--error);
+        }
+        
+        .friend-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 5px;
+        }
+        
+        .friend-email {
+            font-weight: 600;
+            font-size: 1.1rem;
+            color: var(--primary);
+            word-break: break-all;
+        }
+        
+        .friend-domain {
+            display: inline-block;
+            background: rgba(0, 212, 255, 0.1);
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 0.8rem;
+            margin-left: 8px;
+            color: var(--text-muted);
+        }
+        
+        .friend-status {
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        
+        .friend-date {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--text-muted);
+        }
+        
+        .empty-state i {
+            font-size: 3rem;
+            margin-bottom: 15px;
+            opacity: 0.5;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: var(--text-muted);
+        }
+        
+        .loading-spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,.3);
+            border-radius: 50%;
+            border-top-color: var(--primary);
+            animation: spin 1s ease-in-out infinite;
+            margin-right: 10px;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .email-hint {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 10px;
+            padding: 10px;
+            background: rgba(0, 212, 255, 0.1);
+            border-radius: 8px;
+            font-size: 0.9rem;
+        }
+        
+        .valid-domains {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            margin-top: 10px;
+        }
+        
+        .domain-tag {
+            background: rgba(0, 212, 255, 0.1);
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard container">
+        <div class="header">
+            <div class="user-info">
+                <h2>Add Friend by Email</h2>
+                <div class="user-id" id="current-user-id">User ID: Loading...</div>
+            </div>
+            <div>
+                <button class="action-btn" onclick="window.location.href='dashboard.html'" style="margin-right: 10px;">
+                    <i class="fas fa-home"></i> Dashboard
+                </button>
+                <button class="logout-btn" id="logout-btn">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </button>
+            </div>
+        </div>
+        
+        <div class="task-info">
+            <h3>Add Friend & Earn Money</h3>
+            <p style="margin-bottom: 15px; line-height: 1.6;">
+                Add your friend's email address below. Your friend will be verified within 72 hours.
+                Once verified, you will receive payment based on your current level.
+            </p>
+            
+            <div class="task-rates">
+                <div class="rate-item">Current Rate: <span class="rate-highlight" id="current-rate">Rs. 90/friend</span></div>
+                <div class="rate-item">Your Level: <span class="rate-highlight" id="user-level-display">1</span></div>
+                <div class="rate-item">Verified Friends: <span class="rate-highlight" id="verified-count">0</span></div>
+                <div class="rate-item">Total Earnings: <span class="rate-highlight" id="total-earnings">Rs. 0</span></div>
+            </div>
+            
+            <div class="valid-domains">
+                <span style="color: var(--text-muted); font-size: 0.9rem;">Valid email domains:</span>
+                <div class="domain-tag">gmail.com</div>
+                <div class="domain-tag">yahoo.com</div>
+                <div class="domain-tag">hotmail.com</div>
+                <div class="domain-tag">outlook.com</div>
+                <div class="domain-tag">icloud.com</div>
+            </div>
+        </div>
+        
+        <div class="auth-box" style="max-width: 600px; margin: 30px auto;">
+            <form id="add-friend-form">
+                <div class="form-group">
+                    <label for="friend-email">Friend's Email Address *</label>
+                    <div class="input-with-icon">
+                        <i class="fas fa-envelope"></i>
+                        <input type="email" id="friend-email" placeholder="friend@example.com" required>
+                    </div>
+                    <small>Enter a valid email address. We'll verify this email.</small>
+                </div>
+                
+                <div class="form-group">
+                    <label for="friend-password">Friend's Password *</label>
+                    <div class="input-with-icon">
+                        <i class="fas fa-lock"></i>
+                        <input type="password" id="friend-password" placeholder="Enter friend's password" required>
+                    </div>
+                    <small>This password will be used by admin to verify the friend</small>
+                </div>
+                
+                <div class="form-group">
+                    <label for="friend-whatsapp">Friend's WhatsApp Number (Optional)</label>
+                    <div class="input-with-icon">
+                        <i class="fas fa-phone"></i>
+                        <input type="tel" id="friend-whatsapp" placeholder="Enter friend's WhatsApp number">
+                    </div>
+                </div>
+                
+                <div class="email-hint">
+                    <i class="fas fa-info-circle" style="color: var(--primary);"></i>
+                    <span>Make sure the email is valid and belongs to a real person</span>
+                </div>
+                
+                <button type="submit" class="btn" id="submit-btn">
+                    <i class="fas fa-user-plus"></i> Submit Friend
+                </button>
+                
+                <div id="friend-message" class="message hidden"></div>
+            </form>
+        </div>
+        
+        <div class="task-info">
+            <h4>Your Added Friends</h4>
+            <div id="friends-list" class="friends-list">
+                <div class="loading">
+                    <div class="loading-spinner"></div> Loading friends...
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/config.js"></script>
+    <script src="js/github-api.js"></script>
+    <script src="js/task.js"></script>
+</body>
+  </html>
